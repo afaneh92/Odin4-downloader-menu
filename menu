@@ -1,0 +1,143 @@
+#!/bin/bash
+# By Mohammad Afaneh 2019, Afaneh92 @ XDA Developers.
+# Odin4 downloader menu v1.0
+
+# Clear the console before starting
+  clear
+
+# Location
+  export DIR=`readlink -f .`;
+
+# Color
+  On_Blue=`echo -e "\033[44m"`		# On Blue
+  On_Red=`echo -e "\033[41m"`		# On Red
+  Red=`echo -e "\033[0;31m"`		# Red
+  Blue=`echo -e "\033[0;34m"`		# Blue
+  Color_Off=`echo -e "\033[0m"`		# Text Clear
+  Under_Line=`echo -e "\e[4m"`		# Text Under Line
+
+clear_tar() {
+  bl=""
+  ap=""
+  cp=""
+  csc=""
+  ums=""
+}
+
+flash_tar() {
+  [ ! -z "$bl" ] && bl2="-b $bl"
+  [ ! -z "$ap" ] && ap2="-a $ap"
+  [ ! -z "$cp" ] && cp2="-c $cp"
+  [ ! -z "$csc" ] && csc2="-s $csc"
+  [ ! -z "$ums" ] && ums2="-u $ums"
+  [ ! -z "$($DIR/odin4 -l)" ] && device_path="-d $($DIR/odin4 -l)"
+  $DIR/odin4 $bl2 $ap2 $cp2 $csc2 $device_path
+}
+
+choose_tar() {
+  find_tar=""
+  find_tar=($(ls *.tar *.tar.md5 2>/dev/null))
+  declare -i i=1
+  shift 2
+  for e in "${find_tar[@]}"; do
+    echo "$i) $e"
+    i=i+1
+  done
+  echo ""
+  read -p "Select: " REPLY
+  i="$REPLY"
+  if [[ $i -gt 0 && $i -le ${#find_tar[@]} ]]; then
+    eval "export ${1}=${find_tar[$i-1]}"
+  else
+    read -p "${Red}Invalid option, Press ENTER to return to Main menu.${Color_Off}"
+    $DIR/menu
+  fi
+}
+
+# Menu
+  echo "${On_Red}Odin4 downloader menu v1.0${Color_Off}"
+  echo " "
+  echo " ID:COM ${On_Blue}$($DIR/odin4 -l)${Color_Off}"
+  echo " "
+  echo " Files [Download]"
+  echo " ${Under_Line}B${Color_Off}L ${On_Blue}$bl${Color_Off}"
+  echo " ${Under_Line}A${Color_Off}P ${On_Blue}$ap${Color_Off}"
+  echo " ${Under_Line}C${Color_Off}P ${On_Blue}$cp${Color_Off}"
+  echo " C${Under_Line}S${Color_Off}C ${On_Blue}$csc${Color_Off}"
+  echo " ${Under_Line}U${Color_Off}MS ${On_Blue}$ums${Color_Off}"
+  echo " "
+  echo " S${Under_Line}t${Color_Off}art"
+  echo " C${Under_Line}l${Color_Off}ear"
+  echo " "
+  echo " ${Under_Line}R${Color_Off}estart menu"
+  echo " E${Under_Line}x${Color_Off}it menu"
+  echo " "
+# Read the letter the user gives
+  read  -p "Select: " enterLetter
+  echo " "
+
+# BL
+  if [[ "$enterLetter" == "b" || "$enterLetter" == "B" ]]; then
+    choose_tar bl
+    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
+    $DIR/menu
+
+# AP
+  elif [[ "$enterLetter" == "a" || "$enterLetter" == "A" ]]; then
+    choose_tar ap
+    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
+    $DIR/menu
+
+# CP
+  elif [[ "$enterLetter" == "c" || "$enterLetter" == "C" ]]; then
+    choose_tar cp
+    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
+    $DIR/menu
+
+# CSC
+  elif [[ "$enterLetter" == "s" || "$enterLetter" == "S" ]]; then
+    choose_tar csc
+    csc=$?
+    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
+    $DIR/menu
+
+# UMS
+  elif [[ "$enterLetter" == "u" || "$enterLetter" == "U" ]]; then
+    choose_tar ums
+    ums=$?
+    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
+    $DIR/menu
+
+# Reboot Download
+  elif [[ "$enterLetter" == "d" || "$enterLetter" == "D" ]]; then
+    adb reboot download
+    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
+    $DIR/menu
+
+# Start
+  elif [[ "$enterLetter" == "t" || "$enterLetter" == "T" ]]; then
+    flash_tar
+    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
+    $DIR/menu
+
+# Clear
+  elif [[ "$enterLetter" == "l" || "$enterLetter" == "L" ]]; then
+    clear_tar
+    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
+    $DIR/menu
+
+# Restart
+  elif [[ "$enterLetter" == "r" || "$enterLetter" == "R" ]]; then
+    echo "Restarting menu"
+    $DIR/menu
+
+# Exit
+  elif [[ "$enterLetter" == "x" || "$enterLetter" == "X" ]]; then
+    echo "Exiting menu"
+    exit 0
+
+# Other choice
+  else
+    read -p "${Red}Invalid option, Press ENTER to return to Main menu.${Color_Off}"
+    $DIR/menu
+  fi
