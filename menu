@@ -67,6 +67,7 @@ choose_tar() {
   echo " ${Under_Line}U${Color_Off}MS ${On_Blue}$ums${Color_Off}"
   echo " "
   echo " S${Under_Line}t${Color_Off}art"
+  echo " Reboot to ${Under_Line}D${Color_Off}ownload mode"
   echo " C${Under_Line}l${Color_Off}ear"
   echo " "
   echo " ${Under_Line}R${Color_Off}estart menu"
@@ -97,14 +98,12 @@ choose_tar() {
 # CSC
   elif [[ "$enterLetter" == "s" || "$enterLetter" == "S" ]]; then
     choose_tar csc
-    csc=$?
     read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
     $DIR/menu
 
 # UMS
   elif [[ "$enterLetter" == "u" || "$enterLetter" == "U" ]]; then
     choose_tar ums
-    ums=$?
     read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
     $DIR/menu
 
