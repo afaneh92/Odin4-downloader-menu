@@ -1,37 +1,55 @@
 #!/bin/bash
-# By Mohammad Afaneh 2019, Afaneh92 @ XDA Developers.
-# Odin4 downloader menu v1.0
+# By Mohammad Afaneh 2019-2022, Afaneh92 @ XDA Developers.
+# Odin4 downloader menu
 
-# Clear the console before starting
-  clear
-
-# Location
-  export DIR=`readlink -f .`;
+# Variables
+version="v2.0"
+DIR=`readlink -f .`
 
 # Color
-  On_Blue=`echo -e "\033[44m"`		# On Blue
-  On_Red=`echo -e "\033[41m"`		# On Red
-  Red=`echo -e "\033[0;31m"`		# Red
-  Blue=`echo -e "\033[0;34m"`		# Blue
-  Color_Off=`echo -e "\033[0m"`		# Text Clear
-  Under_Line=`echo -e "\e[4m"`		# Text Under Line
+ON_BLUE=`echo -e "\033[44m"`	# On Blue
+BRED=`echo -e "\033[1;31m"`	# Bold Red
+BBLUE=`echo -e "\033[1;34m"`	# Bold Blue
+BGREEN=`echo -e "\033[1;32m"`	# Bold Green
+UNDER_LINE=`echo -e "\e[4m"`	# Text Under Line
+STD=`echo -e "\033[0m"`		# Text Clear
 
-clear_tar() {
+# Functions
+pause(){
+  read -p "${BRED}$2${STD}Press ${BBLUE}[Enter]${STD} key to $1..." fackEnterKey
+}
+
+clear_var() {
   bl=""
   ap=""
   cp=""
   csc=""
   ums=""
+  nand_erase="no"
+}
+
+reboot_bl() {
+  echo " - Rebooting into Download mode";
+  [ ! -z "$($DIR/odin4 -l)" ] && $DIR/odin4 --redownload || adb reboot download
+  pause 'continue'
+}
+
+reboot_nl() {
+  echo " - Rebooting into Normal mode";
+  [ ! -z "$($DIR/odin4 -l)" ] && $DIR/odin4 --reboot
+  pause 'continue'
 }
 
 flash_tar() {
-  [ ! -z "$bl" ] && bl2="-b $bl"
-  [ ! -z "$ap" ] && ap2="-a $ap"
-  [ ! -z "$cp" ] && cp2="-c $cp"
-  [ ! -z "$csc" ] && csc2="-s $csc"
-  [ ! -z "$ums" ] && ums2="-u $ums"
+  [ ! -z "$bl" ] && bl_arg="-b $bl" || bl_arg=""
+  [ ! -z "$ap" ] && ap_arg="-a $ap" || ap_arg=""
+  [ ! -z "$cp" ] && cp_arg="-c $cp" || cp_arg=""
+  [ ! -z "$csc" ] && csc_arg="-s $csc" || csc_arg=""
+  [ ! -z "$ums" ] && ums_arg="-u $ums" || ums_arg=""
+  [ "$nand_erase" == "yes" ] && nand_erase_arg="-e" || nand_erase_arg=""
   [ ! -z "$($DIR/odin4 -l)" ] && device_path="-d $($DIR/odin4 -l)"
-  $DIR/odin4 $bl2 $ap2 $cp2 $csc2 $device_path
+  $DIR/odin4 $bl_arg $ap_arg $cp_arg $csc_arg $ums_arg $nand_erase_arg $device_path
+  pause 'continue'
 }
 
 choose_tar() {
@@ -49,94 +67,67 @@ choose_tar() {
   if [[ $i -gt 0 && $i -le ${#find_tar[@]} ]]; then
     eval "export ${1}=${find_tar[$i-1]}"
   else
-    read -p "${Red}Invalid option, Press ENTER to return to Main menu.${Color_Off}"
-    $DIR/menu
+    pause 'return to Main menu' 'Invalid option!, '
   fi
 }
 
-# Menu
-  echo "${On_Red}Odin4 downloader menu v1.0${Color_Off}"
+# Run once
+clear_var
+
+# Show menu
+show_menus(){
+  clear
+  echo "${ON_BLUE} Odin4 downloader menu $version ${STD}"
   echo " "
-  echo " ID:COM ${On_Blue}$($DIR/odin4 -l)${Color_Off}"
+  echo "${BGREEN}ID:COM:${STD} ${ON_BLUE}$($DIR/odin4 -l)${STD}"
+  echo "${BGREEN}Files [Download]:${STD}"
+  echo "1. ${UNDER_LINE}B${STD}L ${ON_BLUE}$bl${STD}"
+  echo "2. ${UNDER_LINE}A${STD}P ${ON_BLUE}$ap${STD}"
+  echo "3. ${UNDER_LINE}C${STD}P ${ON_BLUE}$cp${STD}"
+  echo "4. C${UNDER_LINE}S${STD}C ${ON_BLUE}$csc${STD}"
+  echo "5. ${UNDER_LINE}U${STD}MS ${ON_BLUE}$ums${STD}"
   echo " "
-  echo " Files [Download]"
-  echo " ${Under_Line}B${Color_Off}L ${On_Blue}$bl${Color_Off}"
-  echo " ${Under_Line}A${Color_Off}P ${On_Blue}$ap${Color_Off}"
-  echo " ${Under_Line}C${Color_Off}P ${On_Blue}$cp${Color_Off}"
-  echo " C${Under_Line}S${Color_Off}C ${On_Blue}$csc${Color_Off}"
-  echo " ${Under_Line}U${Color_Off}MS ${On_Blue}$ums${Color_Off}"
+  echo "${BGREEN}Reboot mode:${STD}"
+  echo "6. Reboot into ${UNDER_LINE}D${STD}ownload mode"
+  echo "7. Reboot into ${UNDER_LINE}N${STD}ormal mode"
   echo " "
-  echo " S${Under_Line}t${Color_Off}art"
-  echo " Reboot to ${Under_Line}D${Color_Off}ownload mode"
-  echo " C${Under_Line}l${Color_Off}ear"
+  echo "${BGREEN}Nand erase all:${STD} ${ON_BLUE}$nand_erase${STD}"
+  echo "8. Set/Unset Nand ${UNDER_LINE}e${STD}rase option"
   echo " "
-  echo " ${Under_Line}R${Color_Off}estart menu"
-  echo " E${Under_Line}x${Color_Off}it menu"
+  echo "9. S${UNDER_LINE}t${STD}art"
+  echo "10. ${UNDER_LINE}R${STD}eset"
   echo " "
-# Read the letter the user gives
-  read  -p "Select: " enterLetter
-  echo " "
+  echo "11. re${UNDER_LINE}f${STD}resh menu"
+  echo "12. E${UNDER_LINE}x${STD}it"
+}
 
-# BL
-  if [[ "$enterLetter" == "b" || "$enterLetter" == "B" ]]; then
-    choose_tar bl
-    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
-    $DIR/menu
+# Read input
+read_options(){
+  local choice
+  read -p "Enter choice [ 1 - 12] " choice
+  case $choice in
+    1|b|B) choose_tar bl ;;
+    2|a|A) choose_tar ap ;;
+    3|c|C) choose_tar cp ;;
+    4|s|S) choose_tar csc ;;
+    5|u|U) choose_tar ums ;;
+    6|s|S) reboot_bl ;;
+    7|n|N) reboot_nl ;;
+    8|e|E) [ "$nand_erase" == "yes" ] && nand_erase="no" || nand_erase="yes" ;;
+    9|t|T) flash_tar ;;
+    10|r|R) clear_var ;;
+    11|f|F) show_menus ;;
+    12|x|X) exit 0 ;;
+    *) pause 'return to Main menu' 'Invalid option, '
+  esac
+}
 
-# AP
-  elif [[ "$enterLetter" == "a" || "$enterLetter" == "A" ]]; then
-    choose_tar ap
-    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
-    $DIR/menu
-
-# CP
-  elif [[ "$enterLetter" == "c" || "$enterLetter" == "C" ]]; then
-    choose_tar cp
-    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
-    $DIR/menu
-
-# CSC
-  elif [[ "$enterLetter" == "s" || "$enterLetter" == "S" ]]; then
-    choose_tar csc
-    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
-    $DIR/menu
-
-# UMS
-  elif [[ "$enterLetter" == "u" || "$enterLetter" == "U" ]]; then
-    choose_tar ums
-    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
-    $DIR/menu
-
-# Reboot Download
-  elif [[ "$enterLetter" == "d" || "$enterLetter" == "D" ]]; then
-    adb reboot download
-    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
-    $DIR/menu
-
-# Start
-  elif [[ "$enterLetter" == "t" || "$enterLetter" == "T" ]]; then
-    flash_tar
-    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
-    $DIR/menu
-
-# Clear
-  elif [[ "$enterLetter" == "l" || "$enterLetter" == "L" ]]; then
-    clear_tar
-    read -p "${Blue}Press ENTER to return to Main menu.${Color_Off}"
-    $DIR/menu
-
-# Restart
-  elif [[ "$enterLetter" == "r" || "$enterLetter" == "R" ]]; then
-    echo "Restarting menu"
-    $DIR/menu
-
-# Exit
-  elif [[ "$enterLetter" == "x" || "$enterLetter" == "X" ]]; then
-    echo "Exiting menu"
-    exit 0
-
-# Other choice
-  else
-    read -p "${Red}Invalid option, Press ENTER to return to Main menu.${Color_Off}"
-    $DIR/menu
-  fi
+# Trap CTRL+C, CTRL+Z and quit singles
+trap '' SIGINT SIGQUIT SIGTSTP
+ 
+# Step # Main logic - infinite loop
+while true
+do
+  show_menus
+  read_options
+done
