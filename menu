@@ -3,7 +3,7 @@
 # Odin4 downloader menu
 
 # Variables
-version="v2.0"
+version="v2.1"
 DIR=`readlink -f .`
 
 # Color
@@ -111,7 +111,7 @@ read_options(){
     3|c|C) choose_tar cp ;;
     4|s|S) choose_tar csc ;;
     5|u|U) choose_tar ums ;;
-    6|s|S) reboot_bl ;;
+    6|d|D) reboot_bl ;;
     7|n|N) reboot_nl ;;
     8|e|E) [ "$nand_erase" == "yes" ] && nand_erase="no" || nand_erase="yes" ;;
     9|t|T) flash_tar ;;
